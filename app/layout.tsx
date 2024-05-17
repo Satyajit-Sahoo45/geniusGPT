@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/react";
 import { Metadata } from "next";
+import NextTopLoader from "nextjs-toploader";
 import "../styles/globals.css";
 
 export default function RootLayout({
@@ -10,6 +11,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#17181C] text-white">
+        <NextTopLoader />
         {children}
         <Analytics />
       </body>
