@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { MessageSquare } from "lucide-react";
+import { Code as CodeIcon } from "lucide-react";
 import { Heading } from "../../../../components/Heading";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
 } from "../../../../components/ui/form";
 import { Button } from "../../../../components/ui/button";
 import axios from "axios";
@@ -21,8 +20,9 @@ import { Empty } from "../../../../components/Empty";
 import { Loader } from "../../../../components/Loader";
 import { BoatAvatar } from "../../../../components/BoatAvatar";
 import { UserAvatar } from "../../../../components/UserAvatar";
+import ReactMarkdown from "react-markdown";
 
-const Conversation = () => {
+const Code = () => {
   const router = useRouter();
   const [messages, setMessages] = useState<any[]>([]);
   const formSchema = z.object({
@@ -64,11 +64,11 @@ const Conversation = () => {
   return (
     <div>
       <Heading
-        title="Conversation"
-        description="Start Conversation"
-        icon={MessageSquare}
-        iconColor="text-violet-500"
-        bgColor="text-violet-500/10"
+        title="Code Generation"
+        description="Generate code using text"
+        icon={CodeIcon}
+        iconColor="text-green-500"
+        bgColor="text-green-500/10"
       />
 
       <div className="px-4 lg:px-8">
@@ -125,7 +125,21 @@ const Conversation = () => {
               >
                 {message.role === "user" ? <UserAvatar /> : <BoatAvatar />}
 
-                <p className="text-sm">{message.content}</p>
+                <ReactMarkdown
+                  components={{
+                    pre: ({ node, ...props }) => (
+                      <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg">
+                        <pre {...props} />
+                      </div>
+                    ),
+                    code: ({ node, ...props }) => (
+                      <code className="bg-black/10 rounded-lg p-1" {...props} />
+                    ),
+                  }}
+                  className="text-sm overflow-hidden leading-7"
+                >
+                  {message.content || ""}
+                </ReactMarkdown>
               </div>
             ))}
           </div>
@@ -135,4 +149,4 @@ const Conversation = () => {
   );
 };
 
-export default Conversation;
+export default Code;
