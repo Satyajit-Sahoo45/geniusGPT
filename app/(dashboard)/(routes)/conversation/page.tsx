@@ -16,7 +16,7 @@ import {
 import { Button } from "../../../../components/ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Empty } from "../../../../components/Empty";
 import { Loader } from "../../../../components/Loader";
 import { BoatAvatar } from "../../../../components/BoatAvatar";
@@ -60,6 +60,10 @@ const Conversation = () => {
       router.refresh();
     }
   };
+
+  useEffect(() => {
+    console.log(messages);
+  }, [messages]);
 
   return (
     <div>
@@ -105,7 +109,7 @@ const Conversation = () => {
           </Form>
         </div>
         <div className="space-y-4 mt-4">
-          {true && (
+          {isLoading && (
             <div className="p-8 rounded-lg w-full flex items-center justify-center bg-muted">
               <Loader />
             </div>
@@ -125,7 +129,7 @@ const Conversation = () => {
               >
                 {message.role === "user" ? <UserAvatar /> : <BoatAvatar />}
 
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm text-white">{message.content}</p>
               </div>
             ))}
           </div>

@@ -16,7 +16,7 @@ import {
 import { Button } from "../../../../components/ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Empty } from "../../../../components/Empty";
 import { Loader } from "../../../../components/Loader";
 import { BoatAvatar } from "../../../../components/BoatAvatar";
@@ -37,7 +37,7 @@ const ImageGeneration = () => {
     prompt: z.string().min(1, {
       message: "Image Prompt is required.",
     }),
-    num_outputs: z.string().min(1),
+    amount: z.string().min(1),
     resolution: z.string().min(1),
   });
 
@@ -79,7 +79,7 @@ const ImageGeneration = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       prompt: "",
-      num_outputs: "1",
+      amount: "2",
       resolution: "512x512",
     },
   });
@@ -107,6 +107,10 @@ const ImageGeneration = () => {
       router.refresh();
     }
   };
+
+  useEffect(() => {
+    console.log(images, "**********");
+  }, [images]);
 
   return (
     <div>
@@ -219,12 +223,12 @@ const ImageGeneration = () => {
             {images.map((src) => (
               <div key={src} className="rounded-lg overflow-square">
                 <div className="relative aspect-square">
-                  <Image src={src} fill alt="Image" />
+                  <Image src={src?.url} fill alt="Image" />
                 </div>
                 <div className="p-2">
                   <Button
                     className="w-full bg-blue-600"
-                    onClick={() => window.open(src)}
+                    onClick={() => window.open(src?.url)}
                   >
                     <Download className="h-4 w-4" />
                   </Button>
