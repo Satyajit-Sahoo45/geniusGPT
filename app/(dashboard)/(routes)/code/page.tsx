@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { Code as CodeIcon } from "lucide-react";
+import { Code as CodeIcon, Copy, CheckCheck } from "lucide-react";
 import { Heading } from "../../../../components/Heading";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +25,9 @@ import toast from "react-hot-toast";
 
 const Code = () => {
   const router = useRouter();
+  const [copyOk, setCopyOk] = useState(false);
+  const iconColor = copyOk ? "#0af20a" : "#ddd";
+  const icon = copyOk ? "CheckCheck" : "Copy";
   const [messages, setMessages] = useState<any[]>([]);
   const formSchema = z.object({
     prompt: z.string().min(1, {
@@ -60,6 +63,15 @@ const Code = () => {
     } finally {
       router.refresh();
     }
+  };
+
+  const handleCopyHandler = (props: any) => {
+    navigator.clipboard.writeText(props.children.props.children);
+
+    setCopyOk(true);
+    setTimeout(() => {
+      setCopyOk(false);
+    }, 700);
   };
 
   return (
@@ -129,8 +141,27 @@ const Code = () => {
                 <ReactMarkdown
                   components={{
                     pre: ({ node, ...props }) => (
-                      <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg">
+                      <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg relative">
                         <pre {...props} />
+                        <div className="absolute top-2 right-4 bg-[#292929] p-2 rounded-lg cursor-pointer">
+                          {copyOk ? (
+                            <CheckCheck
+                              className={`text-green-500`}
+                              size={15}
+                              onClick={() => {
+                                handleCopyHandler({ ...props });
+                              }}
+                            />
+                          ) : (
+                            <Copy
+                              className={`text-${iconColor}`}
+                              size={15}
+                              onClick={() => {
+                                handleCopyHandler({ ...props });
+                              }}
+                            />
+                          )}
+                        </div>
                       </div>
                     ),
                     code: ({ node, ...props }) => (
