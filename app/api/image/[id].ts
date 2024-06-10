@@ -1,7 +1,10 @@
-import { Request, Response } from "express";
+import { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse } from "next/server";
 
-export default async function handler(req: Request, res: Response) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const response = await fetch(
     `https://api.replicate.com/v1/predictions${req.query.id}`,
     {
