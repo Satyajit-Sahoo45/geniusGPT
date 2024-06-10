@@ -29,7 +29,7 @@ export default function Header() {
   };
 
   return (
-    <header className="xs:flex-row flex justify-between items-center w-full mt-3 border-b pb-7 sm:px-4 px-2 border-gray-500 ">
+    <header className="xs:flex-row flex justify-between items-center w-full mt-3 sm:px-4 px-2 border-gray-500 ">
       <Link href="/">
         <Image
           alt="header text"
@@ -39,6 +39,18 @@ export default function Header() {
           height={300}
         />
       </Link>
+      <nav>
+        {user && (
+          <div className="flex gap-4">
+            <Link href="/dashboard" className="hover:text-gray-400">
+              Dashboard
+            </Link>
+            <Link href="/podcast" className="hover:text-gray-400">
+              Podcast
+            </Link>
+          </div>
+        )}
+      </nav>
       <div className=" flex gap-2">
         {user ? (
           <div className="flex gap-x-4 items-center">
