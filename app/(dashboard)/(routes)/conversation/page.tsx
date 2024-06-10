@@ -21,6 +21,7 @@ import { Empty } from "../../../../components/Empty";
 import { Loader } from "../../../../components/Loader";
 import { BoatAvatar } from "../../../../components/BoatAvatar";
 import { UserAvatar } from "../../../../components/UserAvatar";
+import toast from "react-hot-toast";
 
 const Conversation = () => {
   const router = useRouter();
@@ -55,15 +56,11 @@ const Conversation = () => {
       setMessages((prevData) => [...prevData, userMessage, response.data]);
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      toast.error(error.message);
     } finally {
       router.refresh();
     }
   };
-
-  useEffect(() => {
-    console.log(messages);
-  }, [messages]);
 
   return (
     <div>

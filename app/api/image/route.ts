@@ -9,9 +9,7 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log(body, "-===-");
     const { prompt, amount = 1, resolution = "512x512" } = body.values;
-    console.log(prompt, "prompt");
 
     if (!prompt) {
       return new NextResponse("Prompt required", { status: 400 });
@@ -23,11 +21,9 @@ export async function POST(req: Request) {
       size: resolution,
     });
 
-    console.log(response);
-
     return NextResponse.json(response.data);
   } catch (error) {
-    console.log("[CONVERSATION_ERROR]", error);
+    // console.log("[CONVERSATION_ERROR]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }

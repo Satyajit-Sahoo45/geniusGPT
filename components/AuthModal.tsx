@@ -18,8 +18,6 @@ const AuthModal = () => {
   const { session } = useSessionContext();
   const { onClose, isOpen } = UseAuthModal();
 
-  console.log(isOpen, "in the auth modal");
-
   useEffect(() => {
     if (session) {
       router.refresh();
@@ -42,7 +40,7 @@ const AuthModal = () => {
     >
       <Auth
         theme="dark"
-        providers={["github"]}
+        providers={[]}
         supabaseClient={supabaseClient}
         appearance={{
           theme: ThemeSupa,

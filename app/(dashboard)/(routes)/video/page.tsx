@@ -29,6 +29,7 @@ import {
 } from "../../../../components/ui/select";
 import { SelectContent } from "@radix-ui/react-select";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 const VideoGeneration = () => {
   const router = useRouter();
@@ -53,13 +54,11 @@ const VideoGeneration = () => {
       setVideo(undefined);
       const response = await axios.post("/api/video", values);
 
-      console.log(response, "cidep");
-
       setVideo(response.data[0]);
 
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      toast.error(error.message);
     } finally {
       router.refresh();
     }

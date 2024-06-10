@@ -21,6 +21,7 @@ import { Loader } from "../../../../components/Loader";
 import { BoatAvatar } from "../../../../components/BoatAvatar";
 import { UserAvatar } from "../../../../components/UserAvatar";
 import ReactMarkdown from "react-markdown";
+import toast from "react-hot-toast";
 
 const Code = () => {
   const router = useRouter();
@@ -55,7 +56,7 @@ const Code = () => {
       setMessages((prevData) => [...prevData, userMessage, response.data]);
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      toast.error(error.message);
     } finally {
       router.refresh();
     }

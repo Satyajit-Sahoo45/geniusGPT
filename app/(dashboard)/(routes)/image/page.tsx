@@ -29,10 +29,14 @@ import {
 } from "../../../../components/ui/select";
 import { SelectContent } from "@radix-ui/react-select";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 const ImageGeneration = () => {
+  interface ImageType {
+    url: string;
+  }
   const router = useRouter();
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<ImageType[]>([]);
   const formSchema = z.object({
     prompt: z.string().min(1, {
       message: "Image Prompt is required.",
@@ -97,20 +101,14 @@ const ImageGeneration = () => {
         values,
       });
 
-      console.log(response, "urlsurlsurls");
-
       setImages(response.data);
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      toast.error(error.message);
     } finally {
       router.refresh();
     }
   };
-
-  useEffect(() => {
-    console.log(images, "**********");
-  }, [images]);
 
   return (
     <div>
@@ -220,8 +218,8 @@ const ImageGeneration = () => {
             <Empty label="No images generated" />
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-            {images.map((src) => (
-              <div key={src} className="rounded-lg overflow-square">
+            {images.map((src, index) => (
+              <div key={src.url + index} className="rounded-lg overflow-square">
                 <div className="relative aspect-square">
                   <Image src={src?.url} fill alt="Image" />
                 </div>

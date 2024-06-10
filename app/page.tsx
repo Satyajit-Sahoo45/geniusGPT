@@ -1,10 +1,17 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import SquigglyLines from "../components/SquigglyLines";
+import { useUser } from "../hooks/useUser";
+import UseAuthModal from "../hooks/UseAuthModal";
 
 export default function HomePage() {
+  const { user } = useUser();
+  const authModal = UseAuthModal();
+
   return (
     <div className="flex max-w-6xl mx-auto flex-col items-center justify-center py-2 min-h-screen">
       <Header />
@@ -23,7 +30,13 @@ export default function HomePage() {
         </h2>
         <Link
           className="bg-blue-600 rounded-xl text-white font-medium px-4 py-3 sm:mt-10 mt-8 hover:bg-blue-500 transition"
-          href="/dashboard"
+          href={user ? "/dashboard" : "/"}
+          onClick={(e) => {
+            if (!user) {
+              e.preventDefault();
+              authModal.onOpen();
+            }
+          }}
         >
           Get Started
         </Link>

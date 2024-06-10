@@ -68,7 +68,6 @@ export async function POST(request: Request) {
   let restoredImage: string | null = null;
   while (!restoredImage) {
     // Loop in 1s intervals until the alt text is ready
-    console.log("polling for result...");
     let finalResponse = await fetch(endpointUrl, {
       method: "GET",
       headers: {
