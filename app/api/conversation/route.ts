@@ -1,4 +1,3 @@
-import { response } from "express";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
