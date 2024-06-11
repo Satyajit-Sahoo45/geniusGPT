@@ -22,9 +22,14 @@ import { Loader } from "../../../../components/Loader";
 import { BoatAvatar } from "../../../../components/BoatAvatar";
 import { UserAvatar } from "../../../../components/UserAvatar";
 import toast from "react-hot-toast";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+import { useUser } from "../../../../hooks/useUser";
 
+const MAX_FREE_COUNTS = 5;
 const Conversation = () => {
   const router = useRouter();
+  const { supabaseClient } = useSessionContext();
+  const { user } = useUser();
   const [messages, setMessages] = useState<any[]>([]);
   const formSchema = z.object({
     prompt: z.string().min(1, {
@@ -41,6 +46,78 @@ const Conversation = () => {
 
   const isLoading = form.formState.isSubmitting;
 
+  const checkApiLimit = async () => {
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const { data: userApiLimit, error: fetchError } = await supabaseClient
+        .from("UserApiLimit")
+        .select("*")
+        .eq("userid", user.id)
+        .single();
+
+      console.log(userApiLimit, "userApiLimit");
+
+      if (!userApiLimit || userApiLimit.count < MAX_FREE_COUNTS) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
+    }
+  };
+
+  const increaseApiLimit = async () => {
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const { data: userApiLimit, error: fetchError } = await supabaseClient
+        .from("UserApiLimit")
+        .select("*")
+        .eq("userid", user.id)
+        .single();
+
+      // if (fetchError) {
+      //   console.error("Error fetching user API limit:", fetchError);
+      //   return false;
+      // }
+
+      if (userApiLimit) {
+        let updateCount = userApiLimit.count + 1;
+        const { data, error: updateError } = await supabaseClient
+          .from("UserApiLimit")
+          .update({ count: updateCount })
+          .eq("userid", userApiLimit.userid)
+          .select();
+
+        if (updateError) {
+          console.error("Error updating user API limit:", updateError);
+          return false;
+        }
+      } else {
+        const { error: insertError } = await supabaseClient
+          .from("UserApiLimit")
+          .insert({ userid: user.id, count: 1 });
+
+        if (insertError) {
+          console.error("Error inserting new user API limit:", insertError);
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const userMessage: any = {
@@ -49,12 +126,23 @@ const Conversation = () => {
       };
       const newMessages = [...messages, userMessage];
 
-      const response = await axios.post("/api/conversation", {
-        messages: newMessages,
-      });
+      const freeTrial = await checkApiLimit();
 
-      setMessages((prevData) => [...prevData, userMessage, response.data]);
-      form.reset();
+      // if (!freeTrial) {
+      //   toast.error("Free trial has expired");
+      //   return;
+      // }
+
+      if (freeTrial) {
+        const response = await axios.post("/api/conversation", {
+          messages: newMessages,
+        });
+
+        await increaseApiLimit();
+
+        setMessages((prevData) => [...prevData, userMessage, response.data]);
+        form.reset();
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -115,9 +203,9 @@ const Conversation = () => {
             <Empty label="No conversation started" />
           )}
           <div className="flex flex-col-reverse gap-y-4">
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <div
-                key={message.content}
+                key={index}
                 className={`p-8 w-full flex items-start gap-x-8 rounded-lg ${
                   message.user === "user"
                     ? "bg-white border border-black/10"

@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { Download, ImageIcon, MessageSquare, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import { Heading } from "../../../../components/Heading";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,29 +11,22 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
 } from "../../../../components/ui/form";
 import { Button } from "../../../../components/ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Empty } from "../../../../components/Empty";
 import { Loader } from "../../../../components/Loader";
-import { BoatAvatar } from "../../../../components/BoatAvatar";
-import { UserAvatar } from "../../../../components/UserAvatar";
-import {
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../../components/ui/select";
-import { SelectContent } from "@radix-ui/react-select";
-import Image from "next/image";
 import toast from "react-hot-toast";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+import { useUser } from "../../../../hooks/useUser";
 
 const VideoGeneration = () => {
   const router = useRouter();
   const [videos, setVideo] = useState<string>();
+  const { supabaseClient } = useSessionContext();
+  const { user } = useUser();
   const formSchema = z.object({
     prompt: z.string().min(1, {
       message: "Video Prompt is required.",
@@ -49,14 +42,91 @@ const VideoGeneration = () => {
 
   const isLoading = form.formState.isSubmitting;
 
+  const checkApiLimit = async () => {
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const { data: userApiLimit, error: fetchError } = await supabaseClient
+        .from("UserApiLimit")
+        .select("*")
+        .eq("userid", user.id)
+        .single();
+
+      console.log(userApiLimit, "userApiLimit");
+
+      if (!userApiLimit || userApiLimit.count < 5) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
+    }
+  };
+
+  const increaseApiLimit = async () => {
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const { data: userApiLimit, error: fetchError } = await supabaseClient
+        .from("UserApiLimit")
+        .select("*")
+        .eq("userid", user.id)
+        .single();
+
+      // if (fetchError) {
+      //   console.error("Error fetching user API limit:", fetchError);
+      //   return false;
+      // }
+
+      if (userApiLimit) {
+        let updateCount = userApiLimit.count + 1;
+        const { data, error: updateError } = await supabaseClient
+          .from("UserApiLimit")
+          .update({ count: updateCount })
+          .eq("userid", userApiLimit.userid)
+          .select();
+
+        if (updateError) {
+          console.error("Error updating user API limit:", updateError);
+          return false;
+        }
+      } else {
+        const { error: insertError } = await supabaseClient
+          .from("UserApiLimit")
+          .insert({ userid: user.id, count: 1 });
+
+        if (insertError) {
+          console.error("Error inserting new user API limit:", insertError);
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setVideo(undefined);
-      const response = await axios.post("/api/video", values);
+      const freeTrial = await checkApiLimit();
 
-      setVideo(response.data[0]);
+      if (freeTrial) {
+        const response = await axios.post("/api/video", values);
 
-      form.reset();
+        setVideo(response.data[0]);
+
+        await increaseApiLimit();
+        form.reset();
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {

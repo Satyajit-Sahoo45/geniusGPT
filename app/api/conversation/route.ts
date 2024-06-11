@@ -8,7 +8,7 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { messages } = body;
+    const { messages, user } = body;
 
     if (!messages) {
       return new NextResponse("Messages are required", { status: 400 });
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(response.choices[0].message);
   } catch (error) {
-    // console.log("[CONVERSATION_ERROR]", error);
+    console.log("[CONVERSATION_ERROR]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }

@@ -21,6 +21,8 @@ import {
   themeType,
   themes,
 } from "../../../../utils/dropdownTypes";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+import { useUser } from "../../../../hooks/useUser";
 
 const options: UploadWidgetConfig = {
   apiKey: !!process.env.NEXT_PUBLIC_UPLOAD_API_KEY
@@ -47,6 +49,8 @@ const options: UploadWidgetConfig = {
 };
 
 export default function DreamPage() {
+  const { supabaseClient } = useSessionContext();
+  const { user } = useUser();
   const [originalPhoto, setOriginalPhoto] = useState<string | null>(null);
   const [restoredImage, setRestoredImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -82,26 +86,102 @@ export default function DreamPage() {
     />
   );
 
-  async function generatePhoto(fileUrl: string) {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    setLoading(true);
-    const res = await fetch("/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ imageUrl: fileUrl, theme, room }),
-    });
-
-    let newPhoto = await res.json();
-    if (res.status !== 200) {
-      setError(newPhoto);
-    } else {
-      setRestoredImage(newPhoto[1]);
+  const checkApiLimit = async () => {
+    if (!user) {
+      return false;
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 1300);
+
+    try {
+      const { data: userApiLimit, error: fetchError } = await supabaseClient
+        .from("UserApiLimit")
+        .select("*")
+        .eq("userid", user.id)
+        .single();
+
+      console.log(userApiLimit, "userApiLimit");
+
+      if (!userApiLimit || userApiLimit.count < 5) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
+    }
+  };
+
+  const increaseApiLimit = async () => {
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const { data: userApiLimit, error: fetchError } = await supabaseClient
+        .from("UserApiLimit")
+        .select("*")
+        .eq("userid", user.id)
+        .single();
+
+      // if (fetchError) {
+      //   console.error("Error fetching user API limit:", fetchError);
+      //   return false;
+      // }
+
+      if (userApiLimit) {
+        let updateCount = userApiLimit.count + 1;
+        const { data, error: updateError } = await supabaseClient
+          .from("UserApiLimit")
+          .update({ count: updateCount })
+          .eq("userid", userApiLimit.userid)
+          .select();
+
+        if (updateError) {
+          console.error("Error updating user API limit:", updateError);
+          return false;
+        }
+      } else {
+        const { error: insertError } = await supabaseClient
+          .from("UserApiLimit")
+          .insert({ userid: user.id, count: 1 });
+
+        if (insertError) {
+          console.error("Error inserting new user API limit:", insertError);
+          return false;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return false;
+    }
+  };
+
+  async function generatePhoto(fileUrl: string) {
+    const freeTrial = await checkApiLimit();
+    if (freeTrial) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      setLoading(true);
+      const res = await fetch("/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl: fileUrl, theme, room }),
+      });
+
+      let newPhoto = await res.json();
+      if (res.status !== 200) {
+        setError(newPhoto);
+      } else {
+        await increaseApiLimit();
+        setRestoredImage(newPhoto[1]);
+      }
+      setTimeout(() => {
+        setLoading(false);
+      }, 1300);
+    }
   }
 
   return (

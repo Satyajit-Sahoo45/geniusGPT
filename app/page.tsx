@@ -12,6 +12,8 @@ export default function HomePage() {
   const { user } = useUser();
   const authModal = UseAuthModal();
 
+  console.log(user, "user--=-=-=-");
+
   return (
     <div className="flex max-w-6xl mx-auto flex-col items-center justify-center py-2 min-h-screen">
       <Header />
