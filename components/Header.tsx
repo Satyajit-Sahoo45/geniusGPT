@@ -45,9 +45,9 @@ export default function Header() {
             <Link href="/dashboard" className="hover:text-gray-400">
               Dashboard
             </Link>
-            <Link href="/create-podcast" className="hover:text-gray-400">
+            {/* <Link href="/create-podcast" className="hover:text-gray-400">
               Podcast
-            </Link>
+            </Link> */}
           </div>
         )}
       </nav>
