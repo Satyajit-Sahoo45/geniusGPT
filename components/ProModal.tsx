@@ -77,6 +77,11 @@ const ProModal = (props: Props) => {
                 pro
               </Badge>
             </div>
+
+            <div>
+              $7
+              <span>/month</span>
+            </div>
           </DialogTitle>
           <DialogDescription className="text-center pt-2 space-y-2 text-gray-200 font-medium">
             {tools.map((tool) => (
