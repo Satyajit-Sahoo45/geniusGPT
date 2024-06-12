@@ -33,7 +33,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (userApiLimit === null) {
-        toast.error("Error fetching user API limit");
+        // toast.error("Error fetching user API limit");
         return false;
       }
 
