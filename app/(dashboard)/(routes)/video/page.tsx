@@ -21,9 +21,11 @@ import { Loader } from "../../../../components/Loader";
 import toast from "react-hot-toast";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { useUser } from "../../../../hooks/useUser";
+import UseProModal from "../../../../hooks/UseProModal";
 
 const VideoGeneration = () => {
   const router = useRouter();
+  const proModal = UseProModal();
   const [videos, setVideo] = useState<string>();
   const { supabaseClient } = useSessionContext();
   const { user } = useUser();
@@ -126,8 +128,14 @@ const VideoGeneration = () => {
 
         await increaseApiLimit();
         form.reset();
+      } else {
+        toast.error("Free trial has expired");
+        proModal.onOpen();
       }
     } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
       toast.error(error.message);
     } finally {
       router.refresh();

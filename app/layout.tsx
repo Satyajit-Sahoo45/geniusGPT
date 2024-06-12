@@ -6,6 +6,7 @@ import ModalProvider from "../providers/ModalProvider";
 import ToasterProvider from "../providers/ToasterProvider";
 import UserProvider from "../providers/UserProvider";
 import { Analytics } from "@vercel/analytics/react";
+import ProModalProvider from "../providers/ProModalProvider";
 
 export default function RootLayout({
   children,
@@ -19,6 +20,7 @@ export default function RootLayout({
         <NextTopLoader />
         <SupabaseProvider>
           <UserProvider>
+            <ProModalProvider />
             <ModalProvider />
             {children}
             <Analytics />

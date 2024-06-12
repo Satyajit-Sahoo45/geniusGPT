@@ -24,10 +24,12 @@ import { UserAvatar } from "../../../../components/UserAvatar";
 import toast from "react-hot-toast";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { useUser } from "../../../../hooks/useUser";
+import UseProModal from "../../../../hooks/UseProModal";
 
 const MAX_FREE_COUNTS = 5;
 const Conversation = () => {
   const router = useRouter();
+  const proModal = UseProModal();
   const { supabaseClient } = useSessionContext();
   const { user } = useUser();
   const [messages, setMessages] = useState<any[]>([]);
@@ -142,8 +144,14 @@ const Conversation = () => {
 
         setMessages((prevData) => [...prevData, userMessage, response.data]);
         form.reset();
+      } else {
+        toast.error("Free trial has expired");
+        proModal.onOpen();
       }
     } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
       toast.error(error.message);
     } finally {
       router.refresh();

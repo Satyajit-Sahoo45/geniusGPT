@@ -8,7 +8,7 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { messages, user } = body;
+    const { messages } = body;
 
     if (!messages) {
       return new NextResponse("Messages are required", { status: 400 });

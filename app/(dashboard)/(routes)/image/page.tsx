@@ -23,12 +23,14 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { useUser } from "../../../../hooks/useUser";
+import UseProModal from "../../../../hooks/UseProModal";
 
 const ImageGeneration = () => {
   interface ImageType {
     url: string;
   }
   const router = useRouter();
+  const proModal = UseProModal();
   const [images, setImages] = useState<ImageType[]>([]);
   const { supabaseClient } = useSessionContext();
   const { user } = useUser();
@@ -175,8 +177,14 @@ const ImageGeneration = () => {
 
         setImages(response.data);
         form.reset();
+      } else {
+        toast.error("Free trial has expired");
+        proModal.onOpen();
       }
     } catch (error: any) {
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
       toast.error(error.message);
     } finally {
       router.refresh();

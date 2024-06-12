@@ -23,6 +23,8 @@ import {
 } from "../../../../utils/dropdownTypes";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { useUser } from "../../../../hooks/useUser";
+import toast from "react-hot-toast";
+import UseProModal from "../../../../hooks/UseProModal";
 
 const options: UploadWidgetConfig = {
   apiKey: !!process.env.NEXT_PUBLIC_UPLOAD_API_KEY
@@ -50,6 +52,7 @@ const options: UploadWidgetConfig = {
 
 export default function DreamPage() {
   const { supabaseClient } = useSessionContext();
+  const proModal = UseProModal();
   const { user } = useUser();
   const [originalPhoto, setOriginalPhoto] = useState<string | null>(null);
   const [restoredImage, setRestoredImage] = useState<string | null>(null);
@@ -181,6 +184,9 @@ export default function DreamPage() {
       setTimeout(() => {
         setLoading(false);
       }, 1300);
+    } else {
+      toast.error("Free trial has expired");
+      proModal.onOpen();
     }
   }
 
